@@ -26,8 +26,15 @@ func loadPage(title string) (*Page, error) {
 }
 
 func renderTemplate(w http.ResponseWriter, path string, p *Page) {
-	t, _ := template.ParseFiles(path)
-	t.Execute(w, p)
+	t, err := template.ParseFiles(path)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	err = t.Execute(w, p)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 const lenPath = len("/view/")
