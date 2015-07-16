@@ -1,8 +1,8 @@
 package main
 
 import (
-	"net/http"
 	"io/ioutil"
+	"net/http"
 	"text/template"
 )
 
@@ -25,13 +25,17 @@ func loadPage(title string) (*Page, error) {
 	return &Page{Title: title, Body: body}, nil
 }
 
+func renderTemplate(w http.ResponseWriter, path string, p *Page) {
+	t, _ := template.ParseFiles(path)
+	t.Execute(w, p)
+}
+
 const lenPath = len("/view/")
 
 func viewHandler(w http.ResponseWriter, r *http.Request) {
 	title := r.URL.Path[lenPath:]
 	p, _ := loadPage(title)
-	t, _ := template.ParseFiles("view.html")
-	t.Execute(w, p)
+	renderTemplate(w, "view.html", p)
 }
 
 func editHandler(w http.ResponseWriter, r *http.Request) {
@@ -40,14 +44,13 @@ func editHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		p = &Page{Title: title}
 	}
-	t, _ := template.ParseFiles("edit.html")
-	t.Execute(w, p)
+	renderTemplate(w, "edit.html", p)
 }
 
 func saveHandler(w http.ResponseWriter, r *http.Request) {
 }
 
-func main () {
+func main() {
 	http.HandleFunc("/view/", viewHandler)
 	http.HandleFunc("/edit/", editHandler)
 	http.HandleFunc("/save/", saveHandler)
