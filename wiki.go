@@ -25,13 +25,10 @@ func loadPage(title string) (*Page, error) {
 	return &Page{Title: title, Body: body}, nil
 }
 
-func renderTemplate(w http.ResponseWriter, path string, p *Page) {
-	t, err := template.ParseFiles(path)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	err = t.Execute(w, p)
+var templates = make(map[string]*template.Template)
+
+func renderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
+	err := templates[tmpl].Execute(w, p)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -68,6 +65,13 @@ func saveHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http.Redirect(w, r, "/view/"+title, http.StatusFound)
+}
+
+func init () {
+	for _, tmpl := range []string{"edit", "view"} {
+		t := template.Must(template.ParseFiles(tmpl + ".html"))
+		templates[tmpl] = t
+	}
 }
 
 func main() {
